@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="my"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thant Zin Distribution</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f5fa;color:#17233b;font-family:system-ui,sans-serif}
+header{background:linear-gradient(135deg,#10234b,#24518c);color:white;padding:22px}
+header b{font-size:19px;letter-spacing:.4px}.sub{font-size:12px;color:#dce7f8;margin-top:5px}
+main{max-width:720px;margin:auto;padding:14px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:white;border-radius:14px;padding:15px;margin:10px 0;box-shadow:0 3px 14px #14294b10}
+small{color:#718096}.big{font-size:21px;font-weight:750;color:#102b59;margin-top:5px}
+nav{display:flex;gap:7px;overflow:auto;padding:12px 0}nav button{border:0;border-radius:20px;padding:10px 13px;background:#e1e8f2;color:#17345f;white-space:nowrap}nav button.on{background:#102b59;color:white}
+input{width:100%;padding:12px;margin:5px 0 9px;border:1px solid #d5dce7;border-radius:9px;font:inherit}
+.primary{background:#173e76;color:white;border:0;border-radius:9px;padding:12px;width:100%;font:inherit}
+.item{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #edf0f5;font-size:14px}.muted{font-size:12px;color:#7c899d}.hide{display:none}
+</style></head><body>
+<header><b>THANT ZIN DISTRIBUTION</b><div class="sub">အရောင်းနှင့် လုပ်ငန်းစီမံခန့်ခွဲမှု</div></header>
+<main>
+<div class="stats"><div class="card"><small>စုစုပေါင်း အရောင်း</small><div class="big" id="total">0 ကျပ်</div></div><div class="card"><small>ဘောင်ချာအရေအတွက်</small><div class="big" id="count">0 စောင်</div></div></div>
+<nav><button class="on" data-tab="sales">အရောင်း</button><button data-tab="products">ကုန်ပစ္စည်း</button><button data-tab="customers">ဖောက်သည်</button><button data-tab="reports">စာရင်းချုပ်</button></nav>
+<section id="sales" class="card"><h3>အရောင်းဘောင်ချာ</h3>
+<input id="buyer" placeholder="ဖောက်သည်အမည်"><input id="phone" placeholder="ဖုန်းနံပါတ် (ရွေးချယ်နိုင်)"><input id="item" placeholder="ပစ္စည်းအမည်"><input id="qty" type="number" placeholder="အရေအတွက်"><input id="price" type="number" placeholder="တစ်ခုဈေးနှုန်း (ကျပ်)">
+<button class="primary" id="addSale">အရောင်းသိမ်းမည်</button><h3>အရောင်းစာရင်း</h3><div id="salesList" class="muted">အရောင်းစာရင်း မရှိသေးပါ။</div></section>
+<section id="products" class="card hide"><h3>ကုန်ပစ္စည်းထည့်ရန်</h3><input id="pname" placeholder="ပစ္စည်းအမည်"><input id="pprice" type="number" placeholder="ရောင်းဈေး"><input id="stock" type="number" placeholder="လက်ကျန်အရေအတွက်"><button class="primary" id="addProduct">ပစ္စည်းသိမ်းမည်</button><div id="productList"></div></section>
+<section id="customers" class="card hide"><h3>ဖောက်သည်စာရင်း</h3><div id="customerList" class="muted">ဖောက်သည်မရှိသေးပါ။</div></section>
+<section id="reports" class="card hide"><h3>စာရင်းချုပ်</h3><div id="report" class="muted"></div></section>
+<p class="muted" style="text-align:center">စမ်းသပ်အသုံးပြုရန် အစပြုဗားရှင်း · ဖုန်းထဲတွင် သိမ်းဆည်းထားသော စာရင်းများသာ</p>
+</main>
+<script>
+const read=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return []}};
+let sales=read('tz_sales'),products=read('tz_products');
+const money=n=>Number(n||0).toLocaleString('en-US')+' ကျပ်';
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function render(){
+ document.getElementById('total').textContent=money(sales.reduce((a,x)=>a+x.total,0));
+ document.getElementById('count').textContent=sales.length+' စောင်';
+ document.getElementById('salesList').innerHTML=sales.length?sales.slice().reverse().map(x=>`<div class="item"><span><b>${esc(x.buyer)}</b><br><span class="muted">${esc(x.item)} × ${x.qty}</span></span><b>${money(x.total)}</b></div>`).join():'အရောင်းစာရင်း မရှိသေးပါ။';
+ document.getElementById('productList').innerHTML=products.map(x=>`<div class="item"><span>${esc(x.name)}<br><span class="muted">လက်ကျန် ${x.stock}</span></span><b>${money(x.price)}</b></div>`).join('');
+ let cs=[...new Map(sales.map(x=>[x.buyer,x])).values()];
+ document.getElementById('customerList').innerHTML=cs.map(x=>`<div class="item"><span>${esc(x.buyer)}</span><span>${esc(x.phone)}</span></div>`).join()||'ဖောက်သည်မရှိသေးပါ။';
+ document.getElementById('report').textContent=`ဘောင်ချာ ${sales.length} စောင် · အရောင်းစုစုပေါင်း ${money(sales.reduce((a,x)=>a+x.total,0))} · ပစ္စည်း ${products.length} မျိုး`;
+}
+document.getElementById('addSale').onclick=()=>{let buyer=document.getElementById('buyer').value.trim(),item=document.getElementById('item').value.trim(),qty=+document.getElementById('qty').value,price=+document.getElementById('price').value;if(!buyer||!item||qty<1||!document.getElementById('price').value){alert('အချက်အလက်များ ဖြည့်ပါ။');return}sales.push({buyer,phone:document.getElementById('phone').value,item,qty,total:qty*price});localStorage.setItem('tz_sales',JSON.stringify(sales));['buyer','phone','item','qty','price'].forEach(id=>document.getElementById(id).value='');render()};
+document.getElementById('addProduct').onclick=()=>{let name=document.getElementById('pname').value.trim(),price=+document.getElementById('pprice').value,stock=+document.getElementById('stock').value;if(!name||!document.getElementById('pprice').value||!document.getElementById('stock').value){alert('အချက်အလက်များ ဖြည့်ပါ။');return}products.push({name,price,stock});localStorage.setItem('tz_products',JSON.stringify(products));['pname','pprice','stock'].forEach(id=>document.getElementById(id).value='');render()};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('main section').forEach(s=>s.classList.add('hide'));document.getElementById(b.dataset.tab).classList.remove('hide')});
+render();
+</script></body></html>
